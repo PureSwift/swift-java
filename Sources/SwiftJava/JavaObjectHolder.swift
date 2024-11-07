@@ -17,15 +17,23 @@ import CSwiftJavaJNI
 /// Stores a reference to a Java object, managing it as a global reference so
 /// that the Java virtual machine will not move or deallocate the object
 /// while this instance is live.
-public final class JavaObjectHolder {
-  public private(set) var object: jobject? // TODO: thread-safety
+public class JavaObjectHolder {
+  public private(set) var object: jobject?
+#if canImport(Android)
+  public var environment: JNIEnvironment {
+    try! JavaVirtualMachine.shared().environment()
+  }
+#else
   public let environment: JNIEnvironment
+#endif
 
   /// Take a reference to a Java object and promote it to a global reference
   /// so that the Java virtual machine will not garbage-collect it.
   public init(object: jobject, environment: JNIEnvironment) {
     self.object = environment.interface.NewGlobalRef(environment, object)
+#if !canImport(Android)
     self.environment = environment
+#endif
   }
 
   /// Forget this Java object, meaning that it is no longer used from anywhere
