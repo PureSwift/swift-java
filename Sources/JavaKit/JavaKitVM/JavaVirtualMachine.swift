@@ -19,11 +19,7 @@ import Foundation
 #endif
 
 public typealias JavaVMPointer = UnsafeMutablePointer<JavaVM?>
-#if canImport(Android)
-typealias JNIEnvPointer = UnsafeMutablePointer<JNIEnv?>
-#else
 typealias JNIEnvPointer = UnsafeMutableRawPointer
-#endif
 
 public final class JavaVirtualMachine: @unchecked Sendable {
   /// The JNI version that we depend on.
@@ -166,11 +162,7 @@ extension JavaVirtualMachine {
       return environment.assumingMemoryBound(to: JNIEnv?.self)
     }
 
-#if canImport(Android)
-    var jniEnv = environment?.assumingMemoryBound(to: JNIEnv?.self)
-#else
     var jniEnv = environment
-#endif
 
     // Attach the current thread to the JVM.
     let attachResult: jint
@@ -188,11 +180,7 @@ extension JavaVirtualMachine {
 
     JavaVirtualMachine.destroyTLS.set(jniEnv!)
 
-#if canImport(Android)
-    return jniEnv!
-#else
     return jniEnv!.assumingMemoryBound(to: JNIEnv?.self)
-#endif
   }
 
   /// Detach the current thread from the Java Virtual Machine. All Java
